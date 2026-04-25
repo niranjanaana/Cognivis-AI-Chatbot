@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cognivis</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0a0a0f;
+      --surface: #111118;
+      --surface2: #1a1a24;
+      --border: #2a2a3a;
+      --accent: #7c6dfa;
+      --accent2: #fa6d9f;
+      --accent3: #6dfac8;
+      --text: #e8e8f0;
+      --muted: #6b6b80;
+    }
+
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'DM Mono', monospace;
+      background: var(--bg);
+      color: var(--text);
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    header {
+      padding: 14px 24px;
+      border-bottom: 1px solid var(--border);
+      background: var(--surface);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-shrink: 0;
+    }
+
+    .logo-mark {
+      width: 34px;
+      height: 34px;
+      border-radius: 8px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+    }
+
+    .logo-text {
+      font-family: 'Syne', sans-serif;
+      font-weight: 800;
+      font-size: 17px;
+    }
+
+    .logo-text span { color: var(--accent); }
+
+    .badge {
+      margin-left: auto;
+      font-size: 10px;
+      color: var(--accent3);
+      border: 1px solid var(--accent3);
+      padding: 3px 8px;
+      border-radius: 20px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      opacity: 0.7;
+    }
+
+    #chat {
+      flex: 1;
+      overflow-y: auto;
+      padding: 24px 0;
+      scroll-behavior: smooth;
+    }
+
+    #chat::-webkit-scrollbar { width: 4px; }
+    #chat::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+    .msg-row {
+      display: flex;
+      gap: 12px;
+      padding: 6px 24px;
+      animation: up 0.28s ease both;
+    }
+
+    .msg-row.user { flex-direction: row-reverse; }
+
+    @keyframes up {
+      from { opacity: 0; transform: translateY(8px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      margin-top: 2px;
+    }
+
+    .avatar.ai   { background: linear-gradient(135deg, var(--accent), var(--accent2)); }
+    .avatar.user { background: var(--surface2); border: 1px solid var(--border); color: var(--muted); font-size: 11px; }
+
+    .bubble {
+      max-width: min(680px, calc(100% - 80px));
+      border-radius: 14px;
+      padding: 14px 18px;
+      font-size: 13.5px;
+      line-height: 1.7;
+    }
+
+    .bubble.ai {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-top-left-radius: 4px;
+    }
+
+    .bubble.user {
+      background: #1e1a3a;
+      border: 1px solid rgba(124, 109, 250, 0.3);
+      border-top-right-radius: 4px;
+      color: #c8c0ff;
+    }
+
+    .visual-wrap {
+      margin-top: 14px;
+      border-radius: 10px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      background: #0d0d15;
+    }
+
+    .visual-header {
+      padding: 6px 12px;
+      font-size: 10px;
+      color: var(--accent);
+      background: rgba(124, 109, 250, 0.08);
+      border-bottom: 1px solid var(--border);
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .visual-header::before {
+      content: '';
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--accent3);
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50%       { opacity: 0.3; }
+    }
+
+    .visual-body {
+      padding: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .visual-body svg { max-width: 100%; height: auto; display: block; }
+
+    .typing { display: flex; gap: 5px; align-items: center; padding: 4px 0; }
+
+    .typing span {
+      width: 6px;
+      height: 6px;
+      background: var(--accent);
+      border-radius: 50%;
+      animation: dot 1.2s infinite;
+    }
+
+    .typing span:nth-child(2) { animation-delay: 0.2s; }
+    .typing span:nth-child(3) { animation-delay: 0.4s; }
+
+    @keyframes dot {
+      0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
+      30%            { transform: translateY(-6px); opacity: 1; }
+    }
+
+    .chips { display: flex; flex-wrap: wrap; gap: 8px; padding: 2px 24px 16px; }
+
+    .chip {
+      font-family: 'DM Mono', monospace;
+      font-size: 11.5px;
+      padding: 7px 14px;
+      border-radius: 20px;
+      border: 1px solid var(--border);
+      background: var(--surface2);
+      color: var(--muted);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .chip:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+      background: rgba(124, 109, 250, 0.08);
+    }
+
+    .err { color: #fa6d9f; font-size: 13px; }
+
+    .input-bar {
+      padding: 16px 24px 20px;
+      border-top: 1px solid var(--border);
+      background: var(--surface);
+      flex-shrink: 0;
+      display: flex;
+      gap: 10px;
+      align-items: flex-end;
+    }
+
+    #userInput {
+      flex: 1;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px 16px;
+      color: var(--text);
+      font-family: 'DM Mono', monospace;
+      font-size: 13.5px;
+      resize: none;
+      outline: none;
+      line-height: 1.5;
+      max-height: 120px;
+      transition: border-color 0.2s;
+    }
+
+    #userInput:focus { border-color: var(--accent); }
+    #userInput::placeholder { color: var(--muted); }
+
+    #sendBtn {
+      width: 44px;
+      height: 44px;
+      border-radius: 10px;
+      border: none;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      color: #fff;
+      font-size: 18px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      transition: transform 0.15s, opacity 0.2s;
+    }
+
+    #sendBtn:hover:not(:disabled) { transform: scale(1.06); }
+    #sendBtn:disabled { opacity: 0.4; cursor: not-allowed; }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="logo-mark">🧠</div>
+    <div class="logo-text">Cogni<span>vis</span></div>
+    <div class="badge">Visual AI</div>
+  </header>
+
+  <div id="chat">
+    <div class="msg-row">
+      <div class="avatar ai">🧠</div>
+      <div class="bubble ai">
+        Hey! I'm <strong>Cognivis</strong> — ask me to explain <em>anything</em> and I'll break it down with a diagram.
+        <br><br>Try asking about recursion, neural networks, sorting algorithms, or anything you're curious about.
+      </div>
+    </div>
+    <div class="chips" id="chips">
+      <div class="chip" onclick="useChip(this)">🔁 How does recursion work?</div>
+      <div class="chip" onclick="useChip(this)">🌐 Explain the OSI model</div>
+      <div class="chip" onclick="useChip(this)">🧬 How does DNA replication work?</div>
+      <div class="chip" onclick="useChip(this)">⚙️ How does a CPU work?</div>
+    </div>
+  </div>
+
+  <div class="input-bar">
+    <textarea
+      id="userInput"
+      rows="1"
+      placeholder="Ask anything to explain visually…"
+      onkeydown="onKey(event)"
+      oninput="resize(this)"
+    ></textarea>
+    <button id="sendBtn" onclick="send()">↑</button>
+  </div>
+
+  <script>
+    const history = [];
+    const chatEl  = document.getElementById('chat');
+    const inputEl = document.getElementById('userInput');
+    const btn     = document.getElementById('sendBtn');
+
+    function resize(el) {
+      el.style.height = 'auto';
+      el.style.height = Math.min(el.scrollHeight, 120) + 'px';
+    }
+
+    function onKey(e) {
+      if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); }
+    }
+
+    function useChip(el) {
+      inputEl.value = el.textContent.replace(/^[^\w]+/, '').trim();
+      send();
+    }
+
+    function addBubble(role, html) {
+      const row = document.createElement('div');
+      row.className = `msg-row ${role}`;
+      row.innerHTML = `
+        <div class="avatar ${role}">${role === 'ai' ? '🧠' : '👤'}</div>
+        <div class="bubble ${role}">${html}</div>
+      `;
+      chatEl.appendChild(row);
+      chatEl.scrollTop = chatEl.scrollHeight;
+    }
+
+    function showTyping() {
+      const row = document.createElement('div');
+      row.className = 'msg-row';
+      row.id = 'typing';
+      row.innerHTML = `
+        <div class="avatar ai">🧠</div>
+        <div class="bubble ai"><div class="typing"><span></span><span></span><span></span></div></div>
+      `;
+      chatEl.appendChild(row);
+      chatEl.scrollTop = chatEl.scrollHeight;
+    }
+
+    function removeTyping() {
+      document.getElementById('typing')?.remove();
+    }
+
+    async function send() {
+      const text = inputEl.value.trim();
+      if (!text) return;
+
+      document.getElementById('chips')?.remove();
+      inputEl.value = '';
+      inputEl.style.height = 'auto';
+      btn.disabled = true;
+
+      addBubble('user', text);
+      history.push({ role: 'user', content: `Explain this visually: ${text}` });
+      showTyping();
+
+      try {
+        const res = await fetch('/api/chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ message: text, history }),
+        });
+
+        if (!res.ok) {
+          const err = await res.json();
+          throw new Error(err.error || `Server error ${res.status}`);
+        }
+
+        const data = await res.json();
+
+        removeTyping();
+
+        addBubble('ai', `
+          <div>${data.explanation}</div>
+          <div class="visual-wrap">
+            <div class="visual-header">${data.visual_title}</div>
+            <div class="visual-body">${data.svg}</div>
+          </div>
+        `);
+
+        history.push({ role: 'assistant', content: data.assistantMessage });
+
+      } catch (err) {
+        removeTyping();
+        addBubble('ai', `<span class="err">⚠ ${err.message}</span>`);
+        history.pop();
+      }
+
+      btn.disabled = false;
+      chatEl.scrollTop = chatEl.scrollHeight;
+    }
+  </script>
+
+</body>
+</html>
